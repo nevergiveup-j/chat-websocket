@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta id="viewport" name="viewport" content="initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title></title>
+    <style>
+        html,body,div,p,ul,li,span,b {
+            padding: 0;
+            margin: 0;
+        }
+        ul {
+            list-style-type: none;
+        }
+        body {
+            font: 14px/1.5 "Helvetica Neue", Helvetica, Tahoma, "Microsoft Yahei", sans-serif;
+        }
+        .chat-list .list li {
+            padding: 10px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .chat-emit {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 99;
+            width: 100%;
+            padding: 5px;
+            background: #999;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+        }
+        .chat-emit .chat-text {
+            display: block;
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            flex: 1;
+            height: 30px;
+            line-height: 30px;
+            padding: 0 10px;
+            font-size: 14px;
+            background: #fff;
+            border: 1px solid #888;
+        }
+        .chat-emit .button-confirm {
+            display: block;
+            width: 100px;
+            height: 32px;
+            line-height: 26px;
+            font-size: 16px;
+            background: #333;
+            border: none;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-list">
+    <ul class="list" id="J_chatList"></ul>
+</div>
+<div class="chat-emit">
+    <input type="text" class="chat-text"/>
+    <input type="button" class="button-confirm" value="确认"/>
+</div>
+<script src="http://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+<script>
+    (function(){
+        var socket = io.connect('http://127.0.0.1:3001');
+
+        var Chat = {
+            init: function() {
+                var that = this;
+
+                this.$input = $('.chat-text');
+                this.$button = $('.button-confirm');
+                this.$content = $('#J_chatList');
+
+                this.bind();
+                this.onsocket();
+            },
+            bind: function() {
+                var that = this;
+
+                this.$input.on('keypress', function(event) {
+                    if (event.which == 13) {
+                        event.preventDefault();
+
+                        that.emit();
+                    }
+                });
+
+                this.$button.on('click', function() {
+                    that.emit();
+                });
+            },
+            /**
+             * socket连接
+             */
+            onsocket: function() {
+                var that = this;
+
+                // 加入房间
+                socket.on('join', function(data) {
+                    that.renderMessage(data);
+
+
+                    socket.on('message', function(data) {
+                        that.renderMessage(data);
+                    });
+                });
+
+            },
+            renderMessage: function(data) {
+                var that = this;
+
+                if(!data.length){
+                    return;
+                }
+
+                var tpl = '';
+
+                data.map(function(item, i){
+                    tpl += '<li>' + item + '</li>';
+                });
+
+                this.$content.append(tpl);
+            },
+            /**
+             * 发送内容
+             */
+            emit: function() {
+                var that = this;
+
+                var val = $.trim(this.$input.val());
+
+                if(!val.length){
+                    return;
+                }
+
+                // 发送
+                socket.emit('new message', val);
+
+                this.$input.val('');
+            }
+        };
+
+        Chat.init();
+    })()
+</script>
+</body>
+</html>
