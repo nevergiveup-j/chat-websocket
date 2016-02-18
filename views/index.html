@@ -15,6 +15,13 @@
         body {
             font: 14px/1.5 "Helvetica Neue", Helvetica, Tahoma, "Microsoft Yahei", sans-serif;
         }
+        *, :before, :after {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+        .chat-list {
+            padding-bottom: 42px;
+        }
         .chat-list .list li {
             padding: 10px 20px;
             border-bottom: 1px solid #eee;
@@ -37,16 +44,17 @@
             -webkit-box-flex: 1;
             -webkit-flex: 1;
             flex: 1;
-            height: 30px;
-            line-height: 30px;
+            height: 32px;
+            line-height: 32px;
             padding: 0 10px;
+            margin-right: 5px;
             font-size: 14px;
             background: #fff;
             border: 1px solid #888;
         }
         .chat-emit .button-confirm {
             display: block;
-            width: 100px;
+            width: 80px;
             height: 32px;
             line-height: 26px;
             font-size: 16px;
@@ -127,6 +135,7 @@
                 });
 
                 this.$content.append(tpl);
+                this.scrollBottom();
             },
             /**
              * 发送内容
@@ -144,6 +153,14 @@
                 socket.emit('new message', val);
 
                 this.$input.val('');
+            },
+            /**
+             * 定位到底部
+             */
+            scrollBottom: function() {
+                var height = this.$content.height();
+
+                $(window).scrollTop(height);
             }
         };
 
